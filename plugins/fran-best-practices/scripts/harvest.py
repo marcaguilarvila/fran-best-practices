@@ -34,24 +34,36 @@ CATALOG = _LOCAL_REFERENCES / "catalog.json"
 SOURCES_EXAMPLE = _LOCAL_REFERENCES / "sources.example.json"
 
 
-def sources_path() -> Path:
-    """Where sources.json lives: the git checkout first, this plugin copy second.
+USER_CONFIG = Path.home() / ".claude" / "fran-best-practices" / "sources.json"
 
-    The plugin may be running from ~/.claude/plugins/cache/..., which is replaced on every
-    reinstall. Telling someone to create their config there would lose it on the next update,
-    so the checkout wins whenever one can be found.
+
+def sources_path() -> Path:
+    """Where sources.json lives, in order of preference.
+
+    Never the plugin directory when it is a cache copy: ~/.claude/plugins/cache/... is replaced
+    on every reinstall, so a config created there is silently lost on the next update.
+
+    1. ~/.claude/fran-best-practices/sources.json  — durable, survives reinstalls, works however
+       the plugin was installed. This is what gets reported when nothing exists yet.
+    2. The git checkout, when the plugin was installed from one — keeps the config next to the
+       rules you are editing.
+    3. The plugin directory, as a last resort for an unusual layout.
     """
+    if USER_CONFIG.exists():
+        return USER_CONFIG
     try:
         import source_root  # same directory; Python puts it on sys.path
         checkout, _how, _tried = source_root.resolve(fetch=False)
     except Exception:
         checkout = None
     if checkout is not None:
-        candidate = checkout / _RELATIVE_REFERENCES / "sources.json"
-        if candidate.exists():
-            return candidate
-        return candidate  # report this path in the error, so the file is created where it lasts
-    return _LOCAL_REFERENCES / "sources.json"
+        in_checkout = checkout / _RELATIVE_REFERENCES / "sources.json"
+        if in_checkout.exists():
+            return in_checkout
+    local = _LOCAL_REFERENCES / "sources.json"
+    if local.exists():
+        return local
+    return USER_CONFIG  # nothing exists yet: point at the durable location
 
 
 def gh_api(path: str, jq: str | None = None) -> object:
@@ -100,9 +112,11 @@ def load_sources() -> dict:
     sources = sources_path()
     if not sources.exists():
         print(f"harvest: sources.json not found.\n"
+              f"  mkdir -p {sources.parent}\n"
               f"  cp {SOURCES_EXAMPLE} {sources}\n"
               f"  then fill in the reviewer's GitHub login and the repositories to harvest.\n"
-              f"  (it is gitignored: it is the only file that names real repos and people)",
+              f"  (this location survives plugin updates, and is the only file that names\n"
+              f"   real repositories and people -- keep it out of any repo you publish)",
               file=sys.stderr)
         sys.exit(2)
     data = json.loads(sources.read_text(encoding="utf-8"))

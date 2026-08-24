@@ -137,9 +137,10 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/harvest.py"
 `source_root.py` resolves the real checkout and exits 3 with instructions when there is
 nowhere safe to write.
 
-`harvest.py` needs `references/sources.json` — the local, gitignored file naming the reviewer
-and the repositories. It is the only file that identifies anyone, which is what keeps the
-published ruleset generic. Copy `sources.example.json` to create it.
+`harvest.py` needs `~/.claude/fran-best-practices/sources.json` — the local file naming the
+reviewer and the repositories. It lives outside the plugin so it survives updates, and it is
+the only file that identifies anyone, which is what keeps the published ruleset generic. If it
+is missing, `harvest.py` prints the exact path and the example to copy.
 
 For each new comment:
 

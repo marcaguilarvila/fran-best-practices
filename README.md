@@ -117,16 +117,15 @@ root:
 The layer-independent rules — R6 language, R9 backward compatibility, R3 exception handling —
 apply everywhere with no configuration, so it is useful in a new repo on day one.
 
-**Whose comments to learn from.** Copy
-`plugins/fran-best-practices/skills/fran-best-practices/references/sources.example.json` to
-`sources.json` (gitignored) and fill in the reviewer's login and the repositories:
+**Whose comments to learn from.** Create `~/.claude/fran-best-practices/sources.json`:
 
 ```json
 { "reviewer": "<github-login>", "repos": ["<owner>/<repo>"] }
 ```
 
-That is the only file naming anything real, which is what keeps the ruleset itself generic and
-shareable.
+It lives outside the plugin so it survives updates, and it is the only file that names real
+repositories and people — which is what keeps the ruleset itself generic and publishable.
+`/fran-learn` tells you the exact path if it is missing.
 
 ## Feedback loop
 
