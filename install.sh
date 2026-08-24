@@ -1,74 +1,82 @@
 #!/usr/bin/env bash
 # Install the fran-best-practices plugin for Claude Code.
 #
-#   gh repo clone marcaguilarvila/fran-best-practices ~/.claude/fran-best-practices-src \
-#     && ~/.claude/fran-best-practices-src/install.sh
+#   curl -fsSL https://raw.githubusercontent.com/marcaguilarvila/fran-best-practices/main/install.sh | bash
 #
-# or, from a clone you already have:   ./install.sh
+# Run from a clone instead, and the clone itself is registered, so /fran-learn writes the rules
+# it learns straight into your checkout:
 #
-# The repository is private, so this deliberately does NOT offer a `curl | bash` one-liner:
-# raw.githubusercontent.com will not serve it, and `claude plugin marketplace add <owner/repo>`
-# cannot authenticate against a private repo either (verified — it fails even with GH_TOKEN set).
-# Cloning with `gh` uses your gh token, which is why that is the supported path.
+#   ./install.sh
 set -euo pipefail
 
 REPO="${FRAN_BP_REPO:-marcaguilarvila/fran-best-practices}"
 MARKETPLACE="marcaguilar"
 PLUGIN="fran-best-practices"
-DEFAULT_CLONE="$HOME/.claude/${PLUGIN}-src"
+CLONE="$HOME/.claude/${PLUGIN}-src"
+MARKER=".claude-plugin/marketplace.json"
 
-die() { printf '\033[31merror:\033[0m %s\n' "$*" >&2; exit 1; }
+die()  { printf '\033[31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 info() { printf '\033[36m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[33mwarn:\033[0m %s\n' "$*"; }
 
-command -v claude  >/dev/null 2>&1 || die "Claude Code CLI not found. See https://claude.com/claude-code"
+command -v claude  >/dev/null 2>&1 || die "Claude Code not found. See https://claude.com/claude-code"
 command -v python3 >/dev/null 2>&1 || die "python3 not found (the scanner needs it)."
-command -v git     >/dev/null 2>&1 || die "git not found."
 
-# Run from a clone? Use it. Otherwise fetch one with gh, which is the only thing that can read
-# a private repo without extra credential setup.
-SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || echo "")"
-if [ -n "$SELF_DIR" ] && [ -f "$SELF_DIR/.claude-plugin/marketplace.json" ]; then
-  SOURCE="$SELF_DIR"
-  info "Installing from this clone: $SOURCE"
-elif [ -f "$DEFAULT_CLONE/.claude-plugin/marketplace.json" ]; then
-  SOURCE="$DEFAULT_CLONE"
-  info "Updating the existing clone at $SOURCE"
-  git -C "$SOURCE" pull --ff-only --quiet || warn "could not pull; installing what is on disk"
-else
-  command -v gh >/dev/null 2>&1 || die "gh CLI not found, and no clone at $DEFAULT_CLONE.
-  Install gh (brew install gh && gh auth login), or clone the repo yourself and run ./install.sh from it."
-  info "Cloning $REPO into $DEFAULT_CLONE..."
-  mkdir -p "$(dirname "$DEFAULT_CLONE")"
-  gh repo clone "$REPO" "$DEFAULT_CLONE" -- --quiet \
-    || die "clone failed. Do you have access to $REPO? Ask Marc to add you as a collaborator."
-  SOURCE="$DEFAULT_CLONE"
+# Prefer a checkout when there is one: a directory marketplace lets /fran-learn write the rules
+# it learns into a real repository instead of the throwaway plugin cache. Otherwise install
+# straight from GitHub, which needs no git, no gh and no credentials.
+SELF_DIR=""
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ "${BASH_SOURCE[0]}" != "bash" ] && [ -f "${BASH_SOURCE[0]}" ]; then
+  SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 fi
 
-command -v gh >/dev/null 2>&1 || warn "gh not found — /fran-learn needs it to read review comments."
+if [ -n "$SELF_DIR" ] && [ -f "$SELF_DIR/$MARKER" ]; then
+  SOURCE="$SELF_DIR"; MODE="clone"
+  info "Installing from this checkout: $SOURCE"
+elif [ -f "$CLONE/$MARKER" ]; then
+  SOURCE="$CLONE"; MODE="clone"
+  info "Using the existing checkout at $SOURCE"
+  git -C "$SOURCE" pull --ff-only --quiet 2>/dev/null || warn "could not pull; installing what is on disk"
+else
+  SOURCE="$REPO"; MODE="github"
+  info "Installing from GitHub: $SOURCE"
+fi
 
 info "Registering the marketplace..."
-claude plugin marketplace add "$SOURCE" 2>/dev/null || claude plugin marketplace update "$MARKETPLACE"
+claude plugin marketplace add "$SOURCE" >/dev/null 2>&1 \
+  || claude plugin marketplace update "$MARKETPLACE" >/dev/null 2>&1 \
+  || die "could not register the marketplace from $SOURCE"
 
 info "Installing the plugin..."
 claude plugin install "${PLUGIN}@${MARKETPLACE}" --scope user --yes
 
+command -v gh >/dev/null 2>&1 || warn "gh not found — /fran-learn needs it to read review comments."
+
 cat <<DONE
 
-  Installed from $SOURCE
-
-  Restart Claude Code, then:
+  Installed. Restart Claude Code, then, from any repo you want reviewed:
 
     /fran-review          review this branch before you push
     /fran-review 21       review PR #21
-    /fran-learn           fold Fran's new comments into the ruleset
+    /fran-learn           fold a reviewer's new comments into the ruleset
 
   The skill also loads on its own when you ask for a pre-PR review.
 
-  For /fran-learn, create references/sources.json from the example first:
-    it names the reviewer and the repos to harvest, and is gitignored.
+  For /fran-learn, create ~/.claude/fran-best-practices/sources.json with the reviewer's
+  GitHub login and the repos to harvest. It will tell you the exact path if it is missing.
+DONE
 
-  To pick up new rules later:
-    git -C $SOURCE pull && $SOURCE/install.sh
+if [ "$MODE" = "github" ]; then
+  cat <<DONE
+  Update later with:
+    claude plugin marketplace update $MARKETPLACE && claude plugin update $PLUGIN
 
 DONE
+else
+  cat <<DONE
+  This is a directory marketplace, which 'claude plugin update' does not refresh. After
+  editing the rules, reinstall:
+    claude plugin uninstall $PLUGIN && claude plugin install ${PLUGIN}@${MARKETPLACE} --yes
+
+DONE
+fi

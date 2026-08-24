@@ -13,33 +13,40 @@ equivalents — the objection each quote makes is unchanged.
 ## Install
 
 ```bash
-claude plugin marketplace add marcaguilarvila/fran-best-practices
-claude plugin install fran-best-practices@marcaguilar
+curl -fsSL https://raw.githubusercontent.com/marcaguilarvila/fran-best-practices/main/install.sh | bash
 ```
 
 Restart Claude Code. Needs `python3`; `gh` (authenticated) only for the feedback loop.
 
-To update later:
-
-```bash
-claude plugin marketplace update marcaguilar
-claude plugin update fran-best-practices
-```
-
 <details>
-<summary>Installing from a clone instead</summary>
-
-Useful if you want to edit the rules, or if you forked it:
+<summary>Prefer not to pipe a script into your shell?</summary>
 
 ```bash
-gh repo clone <owner>/fran-best-practices ~/.claude/fran-best-practices-src \
-  && ~/.claude/fran-best-practices-src/install.sh
+claude plugin marketplace add marcaguilarvila/fran-best-practices
+claude plugin install fran-best-practices@marcaguilar
 ```
-
-A local clone registers as a directory marketplace, so `/fran-learn` writes straight into it.
-Note that `claude plugin update` does not refresh a directory marketplace — reinstall instead.
 
 </details>
+
+<details>
+<summary>Installing from a clone, to edit the rules</summary>
+
+```bash
+git clone https://github.com/marcaguilarvila/fran-best-practices ~/.claude/fran-best-practices-src
+~/.claude/fran-best-practices-src/install.sh
+```
+
+The clone registers as a directory marketplace, so `/fran-learn` writes the rules it learns
+straight into it. Note that `claude plugin update` does not refresh a directory marketplace —
+reinstall instead.
+
+</details>
+
+**Updating:**
+
+```bash
+claude plugin marketplace update marcaguilar && claude plugin update fran-best-practices
+```
 
 ## Use
 
