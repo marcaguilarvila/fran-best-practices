@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "marcaguilar",
+  "description": "Claude Code plugins by Marc Aguilar",
+  "owner": {
+    "name": "Marc Aguilar"
+  },
+  "plugins": [
+    {
+      "name": "fran-best-practices",
+      "description": "Pre-PR code review for Python services: Pydantic modelling, error-flow discipline, exception design, enums over dicts, magic values, encapsulation, redundant fields. Learns new rules from the review comments your own reviewer leaves.",
+      "author": {
+        "name": "Marc Aguilar"
+      },
+      "category": "development",
+      "source": "./plugins/fran-best-practices"
+    }
+  ]
+}

@@ -1,0 +1,274 @@
+{
+  "_comment": "Evidence base for the ruleset: real pull-request review comments. Anonymised for publication -- repositories are opaque labels, file paths are reduced to the architectural layer the rule depends on, and domain identifiers inside the quotes are substituted for neutral equivalents. The objection each quote makes is unchanged. `id` is the review comment id and is the dedup key used by scripts/harvest.py -- never edit or invent one. Which repositories to harvest, and whose comments, live in sources.json (gitignored; see sources.example.json). Add entries only via /fran-learn.",
+  "repo_labels": {
+    "repo-a": "see sources.json",
+    "repo-b": "see sources.json"
+  },
+  "last_harvest": "2026-08-24T12:41:30Z",
+  "comments": [
+    {
+      "id": "3748996514",
+      "repo": "repo-a",
+      "pr": 5,
+      "date": "2026-08-10",
+      "layer": "api/schemas",
+      "rule": "R8",
+      "quote": "why two separate fields?",
+      "context": "address: dict[str, Any] | None alongside address_text: str | None",
+      "fix": "Deleted address_text; address became a Address model. The agent composes the spoken string."
+    },
+    {
+      "id": "3748999954",
+      "repo": "repo-a",
+      "pr": 5,
+      "date": "2026-08-10",
+      "layer": "api/schemas",
+      "rule": "R8",
+      "quote": "why having `items` and `item`?",
+      "context": "SearchResponse exposed both a list and a singular primary supply",
+      "fix": "Deleted the singular `item` field and its backward-compat fallback; callers use items[0]."
+    },
+    {
+      "id": "3749007920",
+      "repo": "repo-a",
+      "pr": 5,
+      "date": "2026-08-10",
+      "layer": "domain",
+      "rule": "R1",
+      "quote": "create a pydantic object for this",
+      "context": "build_address(supply, province) -> tuple[dict[str, Any], str | None]",
+      "fix": "Added Address(APIResponseModel); build_address now returns Address."
+    },
+    {
+      "id": "3749010679",
+      "repo": "repo-a",
+      "pr": 5,
+      "date": "2026-08-10",
+      "layer": "domain",
+      "rule": "R8",
+      "quote": "why the text field",
+      "context": "build_item emitted both address and address_text",
+      "fix": "Removed the derived text rendering from the payload."
+    },
+    {
+      "id": "3749023590",
+      "repo": "repo-a",
+      "pr": 5,
+      "date": "2026-08-10",
+      "layer": "services",
+      "rule": "R9",
+      "quote": "fuck backward compatibility. we are not in prod lol . this is a very common claude thing, tell him to not care about it",
+      "context": "# Kept for backward compatibility: the first (primary) supply.",
+      "fix": "Deleted the compat field, the schema field, and updated the 4 tests that used it."
+    },
+    {
+      "id": "3749703835",
+      "repo": "repo-a",
+      "pr": 5,
+      "date": "2026-08-10",
+      "layer": "domain",
+      "rule": "R1",
+      "quote": "apply the schema here",
+      "context": "build_address still annotated -> dict[str, Any] after the first fix round",
+      "fix": "Return type changed to Address and the dict literal replaced by the model constructor."
+    },
+    {
+      "id": "3767233447",
+      "repo": "repo-a",
+      "pr": 9,
+      "date": "2026-08-12",
+      "layer": "api/schemas",
+      "rule": "R6",
+      "quote": "no spanish in code!",
+      "context": "# Datos del titular y del item que the upstream exige para dar de alta el aviso.",
+      "fix": "Comment translated to English. The Spanish FIELD names (nombre, primer_apellido, nivel_tension) were kept."
+    },
+    {
+      "id": "3767240685",
+      "repo": "repo-a",
+      "pr": 9,
+      "date": "2026-08-12",
+      "layer": "domain",
+      "rule": "R6",
+      "quote": "same!",
+      "context": "Spanish inline comment in the notice builder",
+      "fix": "Translated."
+    },
+    {
+      "id": "3767249131",
+      "repo": "repo-a",
+      "pr": 9,
+      "date": "2026-08-12",
+      "layer": "domain",
+      "rule": "R7",
+      "quote": "lets create an auxiliar file called `bus` or similar to encapsulate all functions bus specific functions like the datetime and query encoding",
+      "context": "_bus_datetime() living in the domain module",
+      "fix": "Created the clients layer: legacy.py (renamed to gateway.py) holding encode_filter_query + bus_datetime."
+    },
+    {
+      "id": "3767261328",
+      "repo": "repo-a",
+      "pr": 9,
+      "date": "2026-08-12",
+      "layer": "services",
+      "rule": "R6",
+      "quote": "same",
+      "context": "Spanish comment above the BUS endpoint constants",
+      "fix": "Translated."
+    },
+    {
+      "id": "3767267128",
+      "repo": "repo-a",
+      "pr": 9,
+      "date": "2026-08-12",
+      "layer": "services",
+      "rule": "R5",
+      "quote": "lets use a setting to not hardcode strings here",
+      "context": "await self._client.get(\"primary\", READINGS_PATH)",
+      "fix": "Backend moved from a per-call string to the client constructor."
+    },
+    {
+      "id": "3767267909",
+      "repo": "repo-a",
+      "pr": 9,
+      "date": "2026-08-12",
+      "layer": "services",
+      "rule": "R5",
+      "quote": "same",
+      "context": "another hardcoded \"primary\" backend string",
+      "fix": "Same refactor."
+    },
+    {
+      "id": "3767274032",
+      "repo": "repo-a",
+      "pr": 9,
+      "date": "2026-08-12",
+      "layer": "services",
+      "rule": "R7",
+      "quote": "same! noticing a lot of replication here. could we unifiy by creating a mule specific httpx client? and another for the bus one",
+      "context": "third hardcoded backend string in the same file",
+      "fix": "ApiClient takes `backend` in __init__; added frozen dataclass ApiClients{mule,bus} + build_api_clients()."
+    },
+    {
+      "id": "3776887133",
+      "repo": "repo-a",
+      "pr": 11,
+      "date": "2026-08-13",
+      "layer": "clients",
+      "rule": "R2",
+      "quote": "we need to be careful in the error propagation of tools. for the upstream (the workflow) everything is a 200 response with diffferent reutrn body. The errors should be handled in the business logic and return the corresponding next steps to the upstream. See other endpoints for reference",
+      "context": "The client raised UpstreamError and nothing caught it before the route boundary",
+      "fix": "the lookup service catches UpstreamError and returns FlowCode.LOOKUP_UNAVAILABLE. Client still raises; the service translates. Failure-path test added."
+    },
+    {
+      "id": "3795201937",
+      "repo": "repo-a",
+      "pr": 13,
+      "date": "2026-08-17",
+      "layer": "domain",
+      "rule": "R1",
+      "quote": "use a pydantic object",
+      "context": "parse_items(response) -> list[dict[str, str]]",
+      "fix": "Added ItemRecord + ItemHistory in the domain layer: ; the HTTP schema imports them instead of redeclaring."
+    },
+    {
+      "id": "3795204281",
+      "repo": "repo-a",
+      "pr": 13,
+      "date": "2026-08-17",
+      "layer": "services (mocks)",
+      "rule": "R1",
+      "quote": "make the payload a pydantic object",
+      "context": "mock returned payload={\"encontradas\": 1, \"solicitudes\": [...]}",
+      "fix": "Mock builds ItemHistory(...) and returns history.model_dump()."
+    },
+    {
+      "id": "3795206541",
+      "repo": "repo-a",
+      "pr": 13,
+      "date": "2026-08-17",
+      "layer": "services (mocks)",
+      "rule": "R1",
+      "quote": "make this a list of pydantic objects",
+      "context": "the `solicitudes` list of raw dicts inside the mock",
+      "fix": "list[ItemRecord]."
+    },
+    {
+      "id": "3795208860",
+      "repo": "repo-a",
+      "pr": 13,
+      "date": "2026-08-17",
+      "layer": "services (mocks)",
+      "rule": "R12",
+      "quote": "careful here. is this intended?",
+      "context": "\"_MOCK\": True sitting inside what was becoming a Pydantic payload",
+      "fix": "Kept outside the model, with a comment: Pydantic reserves underscore-prefixed field names, so the transport marker is merged after model_dump()."
+    },
+    {
+      "id": "3797659678",
+      "repo": "repo-a",
+      "pr": 16,
+      "date": "2026-08-17",
+      "layer": "domain",
+      "rule": "R5",
+      "quote": "create a constant for this",
+      "context": "\"category\": \"A1234\" inline in the CATEGORY_TYPES map",
+      "fix": "Extracted all 6 the upstream category codes to named constants with a provenance comment."
+    },
+    {
+      "id": "3831034527",
+      "repo": "repo-a",
+      "pr": 18,
+      "date": "2026-08-21",
+      "layer": "api/schemas",
+      "rule": "R8",
+      "quote": "whats this?",
+      "context": "ValidationResult with 8 all-optional diagnostic fields",
+      "fix": "Model deleted entirely, along with FieldError and ClosedValueHint."
+    },
+    {
+      "id": "review-4994327062",
+      "repo": "repo-a",
+      "pr": 18,
+      "date": "2026-08-21",
+      "layer": "<review-body>",
+      "rule": "R1",
+      "quote": "We need to create pydantic object per Tool Request parameters that we expected and their validations. the json should not be pass through. it should as deterministic as possible with well defined tool bodies",
+      "context": "the validation endpoint accepted payload: dict[str, Any] | str and validated it by hand (158 lines)",
+      "fix": "Deleted the bespoke validation module. Added app/api/schemas/validation.py: one envelope per tool with endpoint: Literal[...], payloads extending the real request models, field_validator against the domain collections, Annotated[... , Field(discriminator='endpoint')] union wrapped in RootModel. FastAPI validates natively."
+    },
+    {
+      "id": "3813886152",
+      "repo": "repo-b",
+      "pr": 8,
+      "date": "2026-08-19",
+      "layer": "clients",
+      "rule": "R10",
+      "quote": "what is hydra?",
+      "context": "A comment referencing \"hydra:member\" without saying what Hydra is",
+      "fix": "Comment tripled in length: what API Platform/Hydra is, the two response headers that prove it, an example payload, and what happens if the contract changes."
+    },
+    {
+      "id": "3813911115",
+      "repo": "repo-b",
+      "pr": 8,
+      "date": "2026-08-19",
+      "layer": "domain",
+      "rule": "R4",
+      "quote": "this could throw a KeyError no? why not instead of a dict we create an Enum?",
+      "context": "PROVINCES[postal_code[:2]] against a MappingProxyType of 52 provinces",
+      "fix": "class Province(Enum) with __new__(code, nombre), for_prefix() -> Province | None for user input, province_of() raising ValueError for already-validated input."
+    },
+    {
+      "id": "3843528952",
+      "repo": "repo-a",
+      "pr": 19,
+      "date": "2026-08-24",
+      "layer": "domain",
+      "rule": "R11",
+      "quote": "i dont think is needed, i would say they were just examples",
+      "context": "EMAIL_BLOCKLIST = frozenset(...) hardcoding placeholder addresses listed in the the acceptance criteria",
+      "fix": "PENDING - PR #19 is still open with CHANGES_REQUESTED."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "_comment": "Copy to sources.json (gitignored) and fill in. This is the only file that names real repositories, so the published plugin stays generic and shareable.",
+  "reviewer": "<the GitHub login whose review comments to learn from>",
+  "repos": ["<owner>/<repo>", "<owner>/<another-repo>"]
+}
